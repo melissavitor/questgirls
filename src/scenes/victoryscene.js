@@ -6,7 +6,7 @@ export default class VictoryScene extends Phaser.Scene {
   }
 
   create() {
-    this.add.text(400, 300, 'BootScene', {
+    this.add.text(400, 300, 'VictoryScene', {
       fontFamily: 'monospace',
       fontSize: '32px',
       color: '#e2e2ea'

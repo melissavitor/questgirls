@@ -11,5 +11,7 @@ export default class BootScene extends Phaser.Scene {
       fontSize: '32px',
       color: '#e2e2ea'
     }).setOrigin(0.5);
+
+    this.input.once('pointerdown', () => this.scene.start('MenuScene'));
   }
 }
