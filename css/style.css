@@ -9,6 +9,7 @@ body,
 html,
 body {
   background-color: #0d0b14;
+  overflow: hidden;
 }
 
 #game-container {
@@ -18,4 +19,5 @@ body {
 
 #game-container canvas {
   display: block;
+  image-rendering: pixelated;
 }
