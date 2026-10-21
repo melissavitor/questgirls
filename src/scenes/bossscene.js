@@ -489,7 +489,7 @@ export default class BossScene extends Phaser.Scene {
       return;
     }
 
-    this.bossHealth = quiz.healthOnMiss;
+    this.bossHealth = Math.max(this.bossHealth, quiz.healthOnMiss);
     this.drawHealthBar();
     this.phase = 'quiz-feedback';
     this.startBossAnger();
