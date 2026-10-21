@@ -27,7 +27,7 @@ export const MENU_ASSETS = {
   continueButton: 'btn_continuar_96x32_4f',
   backButton: 'btn_voltar_96x32_4f',
 };
-
+ 
 export const CHARACTERS = [
   {
     id: 'leia',
