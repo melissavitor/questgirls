@@ -192,19 +192,27 @@ export default class MenuScene extends Phaser.Scene {
   }
 
   createCreditsScreen() {
+    const panel = this.add.graphics();
+    panel.fillStyle(COLORS.panel, 0.96);
+    panel.fillRect(14, 39, 292, 105);
+    panel.lineStyle(1, COLORS.panelEdge, 1);
+    panel.strokeRect(14, 39, 292, 105);
+    this.creditsScreen.add(panel);
+
     this.creditsScreen.add(this.add.text(WIDTH / 2, 23, 'CRÉDITOS', {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '10px',
       color: '#f5d56b',
     }).setOrigin(0.5));
 
-    const credits = this.add.text(WIDTH / 2, 47, CREDITS.join('\n'), {
+    const credits = this.add.text(WIDTH / 2, 44, CREDITS.filter(Boolean).join('\n'), {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '6px',
       color: COLORS.text,
       align: 'center',
-      lineSpacing: 4,
-      wordWrap: { width: 286 },
+      lineSpacing: 2,
+      resolution: STAGE_SCALE,
+      wordWrap: { width: 278 },
     }).setOrigin(0.5, 0);
     this.creditsScreen.add(credits);
 

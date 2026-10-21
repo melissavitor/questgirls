@@ -53,10 +53,16 @@ export const CHARACTERS = [
 
 export const CREDITS = [
   'EQUIPE QUESTGIRLS',
-  'Jogo educativo de segurança digital',
+  'Luísa Braga Nery de Lima',
+  'Maria Luiza Pinholate',
+  'Melissa Vitor da Silva',
+  'Sara Da Cruz Freitas',
   '',
   'FEITO COM PHASER',
   '',
   'FONTE: PRESS START 2P',
   'CODEMAN38 · LICENÇA SIL OFL 1.1',
+  '',
+  'MAPA',
+  'Created by dylestorm (www.livingtheindie.com)',
 ];
