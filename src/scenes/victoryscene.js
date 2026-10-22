@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { playBackgroundMusic } from '../audio/backgroundMusic.js';
+import { createVolumeControl } from '../ui/volumeControl.js';
 
 export default class VictoryScene extends Phaser.Scene {
   constructor() {
@@ -6,6 +8,8 @@ export default class VictoryScene extends Phaser.Scene {
   }
 
   create(data) {
+    this.playBackgroundMusic();
+    createVolumeControl(this);
     const characterId = data.personagem ?? this.registry.get('personagem') ?? 'leia';
     const guardian = characterId === 'leia' ? 'Guardiã' : 'Guardião';
     this.cameras.main.setBackgroundColor(0x0d0b14);
@@ -70,8 +74,15 @@ export default class VictoryScene extends Phaser.Scene {
       this.menuButton.clearTint();
       this.menuLabel.setColor('#ffffff');
     });
-    this.menuButton.on('pointerdown', this.returnToMenu, this);
+    this.menuButton.on('pointerdown', () => {
+      this.sound.play('ui-click', { volume: 0.35 });
+      this.returnToMenu();
+    });
     this.input.keyboard.on('keydown', this.handleKeyDown, this);
+  }
+
+  playBackgroundMusic() {
+    playBackgroundMusic(this, 'afterburner-1');
   }
 
   handleKeyDown(event) {

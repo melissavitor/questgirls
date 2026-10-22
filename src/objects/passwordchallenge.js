@@ -163,7 +163,10 @@ export default class PasswordChallenge {
 
       base.on('pointerover', () => base.setFrame(1));
       base.on('pointerout', () => base.setFrame(0));
-      base.on('pointerdown', () => this.appendCharacter(character));
+      base.on('pointerdown', () => {
+        this.scene.sound.play('ui-click', { volume: 0.35 });
+        this.appendCharacter(character);
+      });
       this.tiles.push(base);
     });
   }
@@ -195,7 +198,10 @@ export default class PasswordChallenge {
     hitArea.on('pointerover', () => background.setFillStyle(0x2a2037));
     hitArea.on('pointerout', () => background.setFillStyle(COLORS.panel));
     hitArea.on('pointerdown', () => {
-      if (allowExpired || (!this.isExpired && !this.isComplete)) action();
+      if (allowExpired || (!this.isExpired && !this.isComplete)) {
+        this.scene.sound.play('ui-click', { volume: 0.35 });
+        action();
+      }
     });
     return [background, text, hitArea];
   }

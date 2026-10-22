@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { playBackgroundMusic } from '../audio/backgroundMusic.js';
+import { createVolumeControl, isVolumeControlPointer } from '../ui/volumeControl.js';
 import { CHARACTERS } from '../config/menuData.js';
 import { PHASE_BANNERS } from '../config/phaseData.js';
 import KyberMap from '../objects/kybermap.js';
@@ -22,6 +24,7 @@ export default class MapScene extends Phaser.Scene {
   }
 
   create(data) {
+    this.playBackgroundMusic();
     this.character = CHARACTERS.find(({ id }) => id === data.personagem)
       ?? CHARACTERS.find(({ id }) => id === this.registry.get('personagem'))
       ?? CHARACTERS[0];
@@ -39,8 +42,13 @@ export default class MapScene extends Phaser.Scene {
     this.createUiCamera();
     this.createDialogueUI();
     this.createPlayerHud();
+    createVolumeControl(this);
     this.input.keyboard.on('keydown', this.handleKeyDown, this);
     this.input.on('pointerdown', this.handlePointerDown, this);
+  }
+
+  playBackgroundMusic() {
+    playBackgroundMusic(this, 'synthwave-1');
   }
 
   createAnimations() {
@@ -461,7 +469,8 @@ export default class MapScene extends Phaser.Scene {
     }
   }
 
-  handlePointerDown() {
+  handlePointerDown(pointer) {
+    if (isVolumeControlPointer(this, pointer)) return;
     if (this.challenge) return;
     if (this.awaitingBoss) {
       this.startBossBattle();

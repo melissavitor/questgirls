@@ -171,7 +171,10 @@ export default class PermissionsChallenge {
       .setInteractive({ useHandCursor: true }));
     button.on('pointerover', () => button.setFrame(1));
     button.on('pointerout', () => button.setFrame(0));
-    button.on('pointerdown', () => this.answer(allow));
+    button.on('pointerdown', () => {
+      this.scene.sound.play('ui-click', { volume: 0.35 });
+      this.answer(allow);
+    });
     return button;
   }
 

@@ -1,10 +1,13 @@
 import Phaser from 'phaser';
+import { playBackgroundMusic } from '../audio/backgroundMusic.js';
+import { createVolumeControl } from '../ui/volumeControl.js';
 import { CHARACTERS, CREDITS, MENU_ASSETS, START_SCENE } from '../config/menuData.js';
 
 const WIDTH = 320;
 const HEIGHT = 180;
 const STAGE_SCALE = 2.5;
 const STAGE_TOP = 75;
+const CREDITS_VIEWPORT = { top: 44, height: 87 };
 
 const COLORS = {
   background: 0x0d0b14,
@@ -32,12 +35,19 @@ export default class MenuScene extends Phaser.Scene {
     this.creditsScreen = this.add.container(0, 0);
     this.stage.add([this.mainScreen, this.characterScreen, this.creditsScreen]);
 
+    this.playBackgroundMusic();
     this.createMainScreen();
     this.createCharacterScreen();
     this.createCreditsScreen();
     this.configureInput();
     this.showScreen('main');
     this.cameras.main.fadeIn(300, 13, 11, 20);
+    createVolumeControl(this);
+    this.createCreditsCamera();
+  }
+
+  playBackgroundMusic() {
+    playBackgroundMusic(this, 'afterburner-1');
   }
 
   createBackground() {
@@ -63,9 +73,9 @@ export default class MenuScene extends Phaser.Scene {
         Array.from({ length: 4 }, () => Phaser.Math.Between(0, 1)).join('\n'),
         {
           fontFamily: '"Press Start 2P", monospace',
-          fontSize: '6px',
+          fontSize: '4px',
           color: column % 3 === 0 ? '#3fd0e0' : '#6b3fa0',
-          lineSpacing: 2,
+          lineSpacing: 1,
         },
       ).setAlpha(0.2);
       text.speed = Phaser.Math.Between(8, 20);
@@ -205,16 +215,36 @@ export default class MenuScene extends Phaser.Scene {
       color: '#f5d56b',
     }).setOrigin(0.5));
 
-    const credits = this.add.text(WIDTH / 2, 44, CREDITS.filter(Boolean).join('\n'), {
+    this.creditsContent = this.add.container(0, STAGE_TOP).setScale(STAGE_SCALE);
+    const credits = this.add.text(WIDTH / 2, CREDITS_VIEWPORT.top, CREDITS.join('\n'), {
       fontFamily: '"Press Start 2P", monospace',
       fontSize: '6px',
       color: COLORS.text,
       align: 'center',
-      lineSpacing: 2,
+      lineSpacing: 1,
       resolution: STAGE_SCALE,
-      wordWrap: { width: 278 },
+      wordWrap: { width: 264 },
     }).setOrigin(0.5, 0);
-    this.creditsScreen.add(credits);
+    this.creditsContent.add(credits);
+    this.creditsContent.setVisible(false);
+    this.creditsText = credits;
+
+    this.creditsScroll = 0;
+    this.creditsScrollMax = Math.max(
+      0,
+      credits.height * STAGE_SCALE - CREDITS_VIEWPORT.height * STAGE_SCALE,
+    );
+
+    this.creditsScrollbar = this.add.graphics();
+    this.creditsScreen.add(this.creditsScrollbar);
+    this.updateCreditsScrollbar();
+
+    this.creditsHint = this.add.text(WIDTH / 2, 137, 'ROLE PARA LER', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '4px',
+      color: COLORS.muted,
+    }).setOrigin(0.5);
+    this.creditsScreen.add(this.creditsHint);
 
     this.createButton(
       this.creditsScreen,
@@ -224,6 +254,71 @@ export default class MenuScene extends Phaser.Scene {
       () => this.showScreen('main'),
       0.7,
     );
+
+    this.input.on('wheel', (pointer, _objects, _deltaX, deltaY) => {
+      if (this.activeScreen !== 'credits') return;
+      const localX = pointer.x / STAGE_SCALE;
+      const localY = (pointer.y - STAGE_TOP) / STAGE_SCALE;
+      if (
+        localX >= 14
+        && localX <= 306
+        && localY >= CREDITS_VIEWPORT.top
+        && localY <= CREDITS_VIEWPORT.top + CREDITS_VIEWPORT.height
+      ) {
+        this.scrollCredits(deltaY * 0.08 * STAGE_SCALE);
+      }
+    });
+  }
+
+  scrollCredits(amount) {
+    this.creditsScroll = Phaser.Math.Clamp(
+      this.creditsScroll + amount,
+      0,
+      this.creditsScrollMax,
+    );
+    this.creditsCamera.setScroll(
+      this.creditsCameraViewport.x,
+      this.creditsCameraViewport.y + this.creditsScroll,
+    );
+    this.updateCreditsScrollbar();
+  }
+
+  createCreditsCamera() {
+    const viewport = {
+      x: 18 * STAGE_SCALE,
+      y: STAGE_TOP + CREDITS_VIEWPORT.top * STAGE_SCALE,
+      width: 284 * STAGE_SCALE,
+      height: CREDITS_VIEWPORT.height * STAGE_SCALE,
+    };
+    this.creditsCameraViewport = viewport;
+    this.cameras.main.ignore(this.creditsContent);
+    this.creditsCamera = this.cameras.add(
+      viewport.x,
+      viewport.y,
+      viewport.width,
+      viewport.height,
+    );
+    this.creditsCamera.setScroll(viewport.x, viewport.y);
+    this.creditsCamera.ignore(
+      this.children.list.filter((child) => child !== this.creditsContent),
+    );
+  }
+
+  updateCreditsScrollbar() {
+    const trackTop = CREDITS_VIEWPORT.top;
+    const trackHeight = CREDITS_VIEWPORT.height;
+    const thumbHeight = this.creditsScrollMax > 0
+      ? Math.max(12, trackHeight * trackHeight / (trackHeight + this.creditsScrollMax))
+      : trackHeight;
+    const travel = trackHeight - thumbHeight;
+    const progress = this.creditsScrollMax > 0
+      ? this.creditsScroll / this.creditsScrollMax
+      : 0;
+    this.creditsScrollbar.clear();
+    this.creditsScrollbar.fillStyle(COLORS.panelEdge, 1)
+      .fillRoundedRect(297, trackTop, 2, trackHeight, 1);
+    this.creditsScrollbar.fillStyle(COLORS.cyan, 1)
+      .fillRoundedRect(297, trackTop + travel * progress, 2, thumbHeight, 1);
   }
 
   createButton(container, x, y, texture, action, scale = 0.78) {
@@ -248,6 +343,7 @@ export default class MenuScene extends Phaser.Scene {
     });
     button.sprite.on('pointerdown', () => {
       if (button.disabled) return;
+      this.sound.play('ui-click', { volume: 0.35 });
       button.pressed = true;
       this.drawButton(button);
     });
@@ -293,10 +389,13 @@ export default class MenuScene extends Phaser.Scene {
     this.mainScreen.setVisible(name === 'main');
     this.characterScreen.setVisible(name === 'characters');
     this.creditsScreen.setVisible(name === 'credits');
+    this.creditsContent.setVisible(name === 'credits');
 
     if (name === 'main') {
       this.mainFocus = 0;
       this.updateMainFocus();
+    } else if (name === 'credits') {
+      this.scrollCredits(-this.creditsScroll);
     } else if (name === 'characters') {
       this.characterFocus = 0;
       this.characterFocusTarget = 'cards';
@@ -356,8 +455,18 @@ export default class MenuScene extends Phaser.Scene {
           this.characterFocusTarget = 'continue';
         }
       }
-    } else if (this.activeScreen === 'credits' && (key === 'enter' || key === ' ')) {
-      this.showScreen('main');
+    } else if (this.activeScreen === 'credits') {
+      if (['arrowdown', 's', 'pagedown'].includes(key)) {
+        this.scrollCredits((key === 'pagedown' ? 55 : 18) * STAGE_SCALE);
+      } else if (['arrowup', 'w', 'pageup'].includes(key)) {
+        this.scrollCredits((key === 'pageup' ? -55 : -18) * STAGE_SCALE);
+      } else if (key === 'home') {
+        this.scrollCredits(-this.creditsScrollMax);
+      } else if (key === 'end') {
+        this.scrollCredits(this.creditsScrollMax);
+      } else if (key === 'enter' || key === ' ') {
+        this.showScreen('main');
+      }
     }
   }
 

@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { playBackgroundMusic } from '../audio/backgroundMusic.js';
+import { createVolumeControl } from '../ui/volumeControl.js';
 
 const WIDTH = 800;
 const HEIGHT = 600;
@@ -50,6 +52,10 @@ export default class BossScene extends Phaser.Scene {
   }
 
   create() {
+    this.playBackgroundMusic();
+    createVolumeControl(this);
+    this.projectileSound = this.sound.add('boss-projectile-fire', { volume: 0.3 });
+    this.gameOverHitSound = this.sound.add('player-hit-gameover', { volume: 0.6 });
     this.characterId = this.registry.get('personagem') ?? 'leia';
     this.lives = this.registry.get('lives') ?? 3;
     this.turn = 1;
@@ -151,6 +157,10 @@ export default class BossScene extends Phaser.Scene {
     this.actionButtons = [
       this.makeTextButton('COMEÇAR BATALHA', WIDTH / 2, 568, 220, 36, () => this.startTurn()),
     ];
+  }
+
+  playBackgroundMusic() {
+    playBackgroundMusic(this, 'boss-chiptune');
   }
 
   textStyle(size, color) {
@@ -273,7 +283,10 @@ export default class BossScene extends Phaser.Scene {
         .setDepth(30);
       button.on('pointerover', () => button.setFrame(1));
       button.on('pointerout', () => button.setFrame(0));
-      button.on('pointerdown', () => this.chooseAction(action.id));
+      button.on('pointerdown', () => {
+        this.sound.play('ui-click', { volume: 0.35 });
+        this.chooseAction(action.id);
+      });
       return button;
     });
   }
@@ -385,6 +398,7 @@ export default class BossScene extends Phaser.Scene {
       velocityY = Math.sin(angle) * speed;
     }
 
+    this.projectileSound.play();
     const projectile = this.add.image(x, y, texture, frame).setDepth(8);
     projectile.setData('velocityX', velocityX);
     projectile.setData('velocityY', velocityY);
@@ -411,6 +425,7 @@ export default class BossScene extends Phaser.Scene {
   }
 
   showQuiz(index) {
+    this.playBackgroundMusic();
     const quiz = QUIZZES[index];
     this.phase = 'quiz';
     this.dialogueBox.setVisible(false);
@@ -462,7 +477,10 @@ export default class BossScene extends Phaser.Scene {
       }).setOrigin(0, 0.5).setDepth(26);
       panel.on('pointerover', () => panel.setTint(0x8fdce8));
       panel.on('pointerout', () => panel.clearTint());
-      panel.on('pointerdown', () => this.answerQuiz(answerIndex));
+      panel.on('pointerdown', () => {
+        this.sound.play('ui-click', { volume: 0.35 });
+        this.answerQuiz(answerIndex);
+      });
       return { panel, label };
     });
   }
@@ -639,6 +657,7 @@ export default class BossScene extends Phaser.Scene {
       this.phase = 'gameover';
       this.projectileTimer?.remove();
       this.clearProjectiles();
+      this.gameOverHitSound.play();
       this.setMessage('O Trojan atingiu o núcleo da rede! Todas as vidas foram perdidas.');
       this.time.delayedCall(1300, () => this.scene.start('GameOverScene'));
     }

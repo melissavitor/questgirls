@@ -23,6 +23,8 @@ export default class Player {
 
     this.cursors = scene.input.keyboard.createCursorKeys();
     this.keys = scene.input.keyboard.addKeys('W,A,S,D');
+    this.stepSound = scene.sound.add('player-step', { volume: 0.22, loop: false });
+    this.lastStepAt = 0;
     this.sprite.play(this.map.get(`idle-${this.facing}`));
   }
 
@@ -54,10 +56,16 @@ export default class Player {
         : velocityY < 0 ? 'up' : 'down';
     }
 
-    const state = velocityX === 0 && velocityY === 0 ? 'idle' : 'walk';
+    const isMoving = velocityX !== 0 || velocityY !== 0;
+    const state = isMoving ? 'walk' : 'idle';
     const animation = this.map.get(`${state}-${this.facing}`);
     if (this.sprite.anims.getName() !== animation) {
       this.sprite.play(animation, true);
+    }
+
+    if (isMoving && this.scene.time.now - this.lastStepAt > 220) {
+      this.lastStepAt = this.scene.time.now;
+      this.stepSound.play();
     }
   }
 

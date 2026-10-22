@@ -65,4 +65,9 @@ export const CREDITS = [
   '',
   'MAPA',
   'Created by dylestorm (www.livingtheindie.com)',
+  '',
+  'TRILHA SONORA E EFEITOS SONOROS',
+  "Afterburner (music track) by Paolo D'Emilio from OpenGameArt",
+  '06-06-19 Synthwave by Spring from OpenGameArt',
+  'Organic-Ui Inventory Weapon-Ui Gun Equipment Game-Audio Menu Select Layers Random-Pitch Futuristic Satisfying Sci-Fi by dimapain -- https://freesound.org/s/863791/ -- License: Attribution 4.0',
 ];

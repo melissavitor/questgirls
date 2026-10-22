@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { playBackgroundMusic } from '../audio/backgroundMusic.js';
+import { createVolumeControl, isVolumeControlPointer } from '../ui/volumeControl.js';
 import { CHARACTERS, START_SCENE } from '../config/menuData.js';
 
 const WIDTH = 800;
@@ -15,6 +17,8 @@ export default class IntroScene extends Phaser.Scene {
   }
 
   create(data) {
+    this.playBackgroundMusic();
+    createVolumeControl(this);
     this.characterId = data.personagem ?? this.registry.get('personagem') ?? 'leia';
     this.nextScene = data.nextScene ?? START_SCENE;
     this.character = CHARACTERS.find(({ id }) => id === this.characterId) ?? CHARACTERS[0];
@@ -26,9 +30,15 @@ export default class IntroScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor(COLORS.background);
     this.createBackdrop();
     this.createDialogue();
-    this.input.on('pointerdown', this.advanceDialogue, this);
+    this.input.on('pointerdown', (pointer) => {
+      if (!isVolumeControlPointer(this, pointer)) this.advanceDialogue();
+    });
     this.input.keyboard.on('keydown', this.handleKeyDown, this);
     this.showPage();
+  }
+
+  playBackgroundMusic() {
+    playBackgroundMusic(this, 'synthwave-1');
   }
 
   createAnimations() {

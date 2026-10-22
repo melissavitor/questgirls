@@ -116,7 +116,10 @@ export default class EmailChallenge {
       .setInteractive({ useHandCursor: true }));
     button.on('pointerover', () => button.setFrame(1));
     button.on('pointerout', () => button.setFrame(0));
-    button.on('pointerdown', () => this.answer(answer));
+    button.on('pointerdown', () => {
+      this.scene.sound.play('ui-click', { volume: 0.35 });
+      this.answer(answer);
+    });
     return button;
   }
 

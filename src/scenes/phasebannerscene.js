@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { playBackgroundMusic } from '../audio/backgroundMusic.js';
+import { createVolumeControl, isVolumeControlPointer } from '../ui/volumeControl.js';
 import { PHASE_BANNERS } from '../config/phaseData.js';
 
 const WIDTH = 800;
@@ -10,6 +12,8 @@ export default class PhaseBannerScene extends Phaser.Scene {
   }
 
   create(data) {
+    this.playBackgroundMusic();
+    createVolumeControl(this);
     this.phase = Number(data.phase) || 1;
     this.characterId = data.personagem ?? this.registry.get('personagem') ?? 'leia';
     this.banner = PHASE_BANNERS[this.phase] ?? PHASE_BANNERS[1];
@@ -42,8 +46,16 @@ export default class PhaseBannerScene extends Phaser.Scene {
       repeat: -1,
     });
 
-    this.input.once('pointerdown', this.continueToMap, this);
+    this.input.on('pointerdown', (pointer) => {
+      if (isVolumeControlPointer(this, pointer)) return;
+      this.sound.play('ui-click', { volume: 0.35 });
+      this.continueToMap();
+    });
     this.input.keyboard.on('keydown', this.handleKeyDown, this);
+  }
+
+  playBackgroundMusic() {
+    playBackgroundMusic(this, 'synthwave-1');
   }
 
   handleKeyDown(event) {

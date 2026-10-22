@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { playBackgroundMusic } from '../audio/backgroundMusic.js';
+import { createVolumeControl } from '../ui/volumeControl.js';
 import { CREDITS } from '../config/menuData.js';
 
 const WIDTH = 800;
@@ -10,6 +12,8 @@ export default class GameOverScene extends Phaser.Scene {
   }
 
   create() {
+    this.playBackgroundMusic();
+    createVolumeControl(this);
     this.cameras.main.setBackgroundColor(0x0d0b14);
 
     const grid = this.add.graphics().lineStyle(1, 0x3b1f50, 0.3);
@@ -75,8 +79,15 @@ export default class GameOverScene extends Phaser.Scene {
       this.menuButton.setFillStyle(0x100c1a);
       this.menuButtonLabel.setColor('#ffffff');
     });
-    this.menuButton.on('pointerdown', this.returnToMenu, this);
+    this.menuButton.on('pointerdown', () => {
+      this.sound.play('ui-click', { volume: 0.35 });
+      this.returnToMenu();
+    });
     this.input.keyboard.on('keydown', this.handleKeyDown, this);
+  }
+
+  playBackgroundMusic() {
+    playBackgroundMusic(this, 'afterburner-1');
   }
 
   handleKeyDown(event) {

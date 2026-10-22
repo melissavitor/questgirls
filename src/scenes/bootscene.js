@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { playBackgroundMusic } from '../audio/backgroundMusic.js';
+import { createVolumeControl, isVolumeControlPointer } from '../ui/volumeControl.js';
 import { CHARACTERS, MENU_ASSETS } from '../config/menuData.js';
 import {
   EMAIL_ASSETS,
@@ -244,9 +246,19 @@ export default class BootScene extends Phaser.Scene {
         { frameWidth, frameHeight },
       );
     }
+
+    this.load.audio('afterburner-1', `${import.meta.env.BASE_URL}assets/audio/bgm/Afterburner_1.mp3`);
+    this.load.audio('boss-chiptune', `${import.meta.env.BASE_URL}assets/audio/bgm/chiptune-police loop (1).mp3`);
+    this.load.audio('synthwave-1', `${import.meta.env.BASE_URL}assets/audio/bgm/synthwave (1).ogg`);
+    this.load.audio('player-step', `${import.meta.env.BASE_URL}assets/audio/sfx/el_boss_ui-button-click.wav`);
+    this.load.audio('boss-projectile-fire', `${import.meta.env.BASE_URL}assets/audio/sfx/organic-ui-inventory-weapon-ui-gun.wav`);
+    this.load.audio('ui-click', `${import.meta.env.BASE_URL}assets/audio/sfx/ranner_ui-click.wav`);
+    this.load.audio('player-hit-gameover', `${import.meta.env.BASE_URL}assets/audio/sfx/sci-fi-weapon-shot-laser-gun.wav`);
   }
 
   create() {
+    this.playBackgroundMusic();
+    createVolumeControl(this);
     const { width, height } = this.scale;
 
     this.add.image(width / 2, height / 2 - 60, MENU_ASSETS.logo)
@@ -286,8 +298,14 @@ export default class BootScene extends Phaser.Scene {
       },
     });
 
-    this.input.on('pointerdown', this.openMenu, this);
+    this.input.on('pointerdown', (pointer) => {
+      if (!isVolumeControlPointer(this, pointer)) this.openMenu();
+    });
     this.input.keyboard.on('keydown', this.openMenu, this);
+  }
+
+  playBackgroundMusic() {
+    playBackgroundMusic(this, 'synthwave-1');
   }
 
   drawProgress(progress) {
