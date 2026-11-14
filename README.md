@@ -87,7 +87,7 @@ Caso queira executar ou modificar o código-fonte no seu computador:
 
 ---
 
-## 👥 Equipe de Desenvolvimento (Squad)
+## 👥 Equipe de Desenvolvimento (Quest Girls)
 
 * **[Luísa Braga Nery de Lima](https://github.com/luisabnery)** 
 * **[Maria Luiza Pinholate](https://github.com/mariapinholate)** 
